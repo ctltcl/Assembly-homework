@@ -1,4 +1,4 @@
-STKSEG SEGMENT STACK 
+STKSEG SEGMENT STACK
     DW 32 DUP(0)
 STKSEG ENDS
 
@@ -12,32 +12,28 @@ CODESEG SEGMENT
 START:
     MOV AX, DATASEG
     MOV DS, AX
-
+    MOV CX, 26
     MOV AH, 2
     MOV BX, 0          ; 行计数器
 
-OUTER_LOOP:
-    MOV CX, 13         ; 每行输出 13 个字符
-
-INNER_LOOP:
+L:
     MOV DL, [A]       ; 从 A 中读取字符到 DL
     INT 21H           ; 输出字符
     INC A             ; 增加 A 的值
 
     INC BX             ; 增加行计数器
-    LOOP INNER_LOOP    ; 循环输出 13 个字符
+    CMP BX, 13        ; 检查是否已输出 13 个字符
+    JGE NEWLINE       ; 如果是，跳转到换行
 
-    ; 换行
+    LOOP L            ; 否则继续循环
+
+NEWLINE:
     MOV DL, 13        ; Carriage return
     INT 21H
     MOV DL, 10        ; Line feed
     INT 21H
-
     MOV BX, 0         ; 重置行计数器
-
-    ; 检查是否输出完 26 个字符
-    CMP A, 'Z' + 1    ; 检查是否达到 'Z' + 1
-    JB OUTER_LOOP     ; 如果还未输出到 'Z'，则继续外层循环
+    LOOP L            ; 继续输出剩余的字符
 
     MOV AX, 4C00H
     INT 21H
